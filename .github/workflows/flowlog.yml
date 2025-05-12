@@ -1,4 +1,4 @@
-name: Deploy to AWS China
+name: Deploy to AWS Asia
 
 on:
   push:
@@ -26,12 +26,13 @@ jobs:
         run: |
           aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
           aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
-          aws configure set region ap-south-1 # Change to cn-northwest-1 if needed
+          aws configure set region ap-south-1 # Change to the appropriate region
 
-    - name: Set up Terraform
-      uses: hashicorp/setup-terraform@v1
-      with:
-        terraform_version: 1.1.7  # Specify the version of Terraform you want to use
+      # Set up Terraform
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.1.7  # Specify the version of Terraform you want to use
         
       # Run Terraform commands (if using Terraform)
       - name: Terraform Init
