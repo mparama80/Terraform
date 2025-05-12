@@ -33,13 +33,20 @@ jobs:
         uses: hashicorp/setup-terraform@v1
         with:
           terraform_version: 1.1.7  # Specify the version of Terraform you want to use
-        
+
+      # Change directory to where main.tf is located
+      - name: Change directory
+        run: cd vpc-flow-logs
+
       # Run Terraform commands (if using Terraform)
       - name: Terraform Init
         run: terraform init
+        working-directory: vpc-flow-logs
 
       - name: Terraform Plan
         run: terraform plan
+        working-directory: vpc-flow-logs
 
       - name: Terraform Apply
         run: terraform apply -auto-approve
+        working-directory: vpc-flow-logs
