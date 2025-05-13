@@ -43,9 +43,8 @@ jobs:
       - name: Terraform Init
         run: |
           terraform init -backend-config="statefilebackup202512" \
-                         -backend-config="statefile/terraform.tfstate" \
-                         -backend-config="region=ap-south-1" 
-                         #-backend-config="dynamodb_table=your-lock-table"
+                         -backend-config="key=statefile/terraform.tfstate" \
+                         -backend-config="region=ap-south-1"                    
         working-directory: vpc-flow-logs
 
       - name: Terraform Plan
