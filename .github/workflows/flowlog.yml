@@ -55,9 +55,11 @@ jobs:
       - name: Terraform Plan
         run: terraform plan
         working-directory: vpc-flow-logs
+
       - name: Terraform Apply
         run: terraform apply -auto-approve
         working-directory: vpc-flow-logs
+
       # Destroy Terraform resources
       - name: Terraform Destroy
         if: github.event.inputs.destroy == 'true'
@@ -69,5 +71,15 @@ jobs:
         if: github.event.inputs.destroy == 'true'
         run: |
           BUCKET_NAME="flow-logs-bucketvpc07457e1-cn-northwest-1"
+          # Delete all objects
           aws s3 rm s3://$BUCKET_NAME --recursive
+          # Delete all object versions
+          aws s3api list-object-versions --bucket "$BUCKET_NAME" --query 'Versions[].{Key:Key,VersionId:VersionId}' --output text | while read key version; do
+            aws s3api delete-object --bucket "$BUCKET_NAME" --key "$key" --version-id "$version"
+          done
+          # Delete all multipart uploads
+          aws s3api list-multipart-uploads --bucket "$BUCKET_NAME" --query 'Uploads[].{Key:Key,UploadId:UploadId}' --output text | while read key upload_id; do
+            aws s3api abort-multipart-upload --bucket "$BUCKET_NAME" --key "$key" --upload-id "$upload_id"
+          done
+          # Delete the bucket
           aws s3api delete-bucket --bucket "$BUCKET_NAME" --region cn-northwest-1
