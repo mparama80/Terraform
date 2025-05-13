@@ -56,3 +56,10 @@ resource "aws_s3_bucket_policy" "vpc_flow_logs_policy" {
     ]
   })
 }
+terraform {
+  backend "s3" {
+    bucket = "statefilebackup202512"
+    key    = "statefile/terraform.tfstate"
+    region = "ap-south-1"
+  }
+}
