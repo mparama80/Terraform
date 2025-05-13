@@ -1,8 +1,6 @@
 name: Deploy to AWS Asia
 
 on:
-  #push:
-   # branches: [ "testbranch" ]
   pull_request:
     branches: [ "main" ]
   workflow_dispatch:
@@ -21,29 +19,33 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Configure AWS CLI for China region
+      # Configure AWS CLI for the appropriate region
       - name: Configure AWS CLI
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID_CN }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY_CN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
           aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
           aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
-          aws configure set region ap-south-1 # Change to the appropriate region
+          aws configure set region ap-south-1
 
       # Set up Terraform
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v1
         with:
-          terraform_version: 1.1.7  # Specify the version of Terraform you want to use
+          terraform_version: 1.1.7
 
       # Change directory to where main.tf is located
       - name: Change directory
         run: cd vpc-flow-logs
 
-      # Run Terraform commands (if using Terraform)
+      # Initialize Terraform with S3 backend
       - name: Terraform Init
-        run: terraform init
+        run: |
+          terraform init -backend-config="statefilebackup202512" \
+                         -backend-config="statefile/terraform.tfstate" \
+                         -backend-config="region=ap-south-1" 
+                         #-backend-config="dynamodb_table=your-lock-table"
         working-directory: vpc-flow-logs
 
       - name: Terraform Plan
