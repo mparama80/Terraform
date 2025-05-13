@@ -1,19 +1,9 @@
 ##############################################################################
 ## Provisioning S3 bucket
 ##############################################################################
- #resource "aws_s3_bucket" "flow_logs" {
- #  bucket = "flow-logs-bucketvpc07457e1-cn-northwest-1"
-# }
-
-data "aws_s3_bucket" "existing_bucket" {
-  bucket = "flow-logs-bucketvpc07457e1-cn-northwest-1"
-}
-
 resource "aws_s3_bucket" "flow_logs" {
-  count  = length(data.aws_s3_bucket.existing_bucket.id) == 0 ? 1 : 0
-  bucket = "flow-logs-bucketvpc07457e1-cn-northwest-1"
-}
-
+  bucket = "flow-logs-bucketvpc07457e1-cn-northwest-1"
+ }
 
 ##############################################################################
 ## Provisioning VPC Flow log for cn-northwest-1
