@@ -1,8 +1,8 @@
 name: Deploy to AWS Asia
 
 on:
-  push:
-    branches: [ "testbranch" ]
+  #push:
+   # branches: [ "testbranch" ]
   pull_request:
     branches: [ "main" ]
   workflow_dispatch:
