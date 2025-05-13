@@ -1,19 +1,19 @@
 ##############################################################################
 ## Provisioning S3 bucket
 ##############################################################################
-## resource "aws_s3_bucket" "flow_logs" {
-  ## bucket = "flow-logs-bucketvpc07457e1-cn-northwest-1"
+ #resource "aws_s3_bucket" "flow_logs" {
+ #  bucket = "flow-logs-bucketvpc07457e1-cn-northwest-1"
 # }
 
-terraform {
-  backend "s3" {
-    bucket         = "flow-logs-bucketvpc07457e1-cn-northwest-1"
-    key            = "statefile/terraform.tfstate"
-    region         = "ap-south-1"
-    encrypt        = true
-   # dynamodb_table = "your-dynamodb-table-name" # Optional, for state locking
-  }
+data "aws_s3_bucket" "existing_bucket" {
+  bucket = "flow-logs-bucketvpc07457e1-cn-northwest-1"
 }
+
+resource "aws_s3_bucket" "flow_logs" {
+  count  = length(data.aws_s3_bucket.existing_bucket.id) == 0 ? 1 : 0
+  bucket = "flow-logs-bucketvpc07457e1-cn-northwest-1"
+}
+
 
 ##############################################################################
 ## Provisioning VPC Flow log for cn-northwest-1
@@ -64,4 +64,13 @@ resource "aws_s3_bucket_policy" "vpc_flow_logs_policy" {
             }
         ]
     })
+}
+terraform {
+  backend "s3" {
+    bucket         = "flow-logs-bucketvpc07457e1-cn-northwest-1"
+    key            = "statefile/terraform.tfstate"
+    region         = "ap-south-1"
+    encrypt        = true
+   # dynamodb_table = "your-dynamodb-table-name" # Optional, for state locking
+  }
 }
