@@ -55,13 +55,19 @@ jobs:
       - name: Terraform Plan
         run: terraform plan
         working-directory: vpc-flow-logs
-
       - name: Terraform Apply
         run: terraform apply -auto-approve
         working-directory: vpc-flow-logs
-
       # Destroy Terraform resources
       - name: Terraform Destroy
         if: github.event.inputs.destroy == 'true'
         run: terraform destroy -auto-approve
         working-directory: vpc-flow-logs
+
+      # Empty and delete S3 bucket
+      - name: Empty and delete S3 bucket
+        if: github.event.inputs.destroy == 'true'
+        run: |
+          BUCKET_NAME="flow-logs-bucketvpc07457e1-cn-northwest-1"
+          aws s3 rm s3://$BUCKET_NAME --recursive
+          aws s3api delete-bucket --bucket "$BUCKET_NAME" --region cn-northwest-1
