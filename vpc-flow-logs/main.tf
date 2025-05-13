@@ -4,16 +4,6 @@
 resource "aws_s3_bucket" "flow_logs" {
    bucket = "flow-logs-bucketvpc07457e1-cn-northwest-1"
 }
-terraform {
-  backend "s3" {
-    bucket         = "flow-logs-bucketvpc07457e1-cn-northwest-1"
-    key            = "statefile/terraform.tfstate"
-    region         = "ap-south-1"
-    encrypt        = true
-    dynamodb_table = "your-dynamodb-table-name" # Optional, for state locking
-  }
-}
-
 
 ##############################################################################
 ## Provisioning VPC Flow log for cn-northwest-1
