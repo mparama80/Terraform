@@ -24,7 +24,8 @@ jobs:
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
         run: |
-          TAG="v$(date +'%Y%m%d%H%M%S')"
+          ### TAG="v$(date +'%Y%m%d%H%M%S')"
+          TAG="v$(date +'%Y%m%d')-1-tcg-dev"
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions"
           git tag "$TAG"
