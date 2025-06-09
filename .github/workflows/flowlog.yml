@@ -19,16 +19,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
       
-      # Auto-tag the commit
       - name: Auto Tag Commit
-        id: auto_tag
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
         run: |
           TAG="v$(date +'%Y%m%d%H%M%S')"
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions"
           git tag "$TAG"
+          git remote set-url origin https://x-access-token:${GH_PAT}@github.com/${{ github.repository }}
           git push origin "$TAG"
-
 
       # Configure AWS CLI for the appropriate region
       - name: Configure AWS CLI
