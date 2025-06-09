@@ -83,10 +83,3 @@ jobs:
           done
           # Delete the bucket
           aws s3api delete-bucket --bucket "$BUCKET_NAME" --region cn-northwest-1
-        # create tag
-        
-      # - name: Create tag with current date
-      #   run: |
-      #     DATE=$(date +'%Y-%m-%d')
-      #     # git tag "$DATE"
-      #     ## git push origin "$DATE"
