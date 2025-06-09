@@ -18,17 +18,17 @@ jobs:
       # Checkout the repository
       - name: Checkout code
         uses: actions/checkout@v3
-
       
-      # Auto-tag the commit
-      - name: Auto Tag Commit
-        id: auto_tag
-        run: |
-          TAG="v$(date +'%Y%m%d%H%M%S')"
-          git config --global user.email "actions@github.com"
-          git config --global user.name "GitHub Actions"
-          git tag $TAG
-          git push origin $TAG
+      # Auto-tag the commit
+      - name: Auto Tag Commit
+        id: auto_tag
+        run: |
+          TAG="v$(date +'%Y%m%d%H%M%S')"
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
+          git tag "$TAG"
+          git push origin "$TAG"
+
 
       # Configure AWS CLI for the appropriate region
       - name: Configure AWS CLI
