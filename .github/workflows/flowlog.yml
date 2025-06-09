@@ -88,5 +88,5 @@ jobs:
       - name: Create tag with current date
         run: |
           DATE=$(date +'%Y-%m-%d')
-          git tag "$DATE"
-          git push origin "$DATE"
+          # git tag "$DATE"
+          # git push origin "$DATE"
