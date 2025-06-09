@@ -9,10 +9,6 @@ on:
         description: 'Set to true to destroy resources'
         required: true
         default: 'false'
-      tag_suffix:
-        description: 'Tag suffix (e.g., tcg-dev, tcg-uat, tcg-prod)'
-        required: true
-        default: 'tcg-dev'
 
 jobs:
   deploy:
@@ -24,29 +20,31 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Auto Tag Commit (Suffix-Based Increment)
+      - name: Auto Tag Commit (Incremental Date Format)
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
-          TAG_SUFFIX: ${{ github.event.inputs.tag_suffix }}
         run: |
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions"
-          git remote set-url origin https://x-access-token:${{GH_PAT}}@github.com/${{ github.repository }}
+          git remote set-url origin https://x-access-token:${GH_PAT}@github.com/${{ github.repository }}
 
+          # Fetch all tags
           git fetch --tags
 
+          # Get today's date
           DATE=$(date +'%Y%m%d')
 
-          LAST_TAG=$(git tag | grep "^v${DATE}-[0-9]\+-${TAG_SUFFIX}$" | sort -V | tail -n 1)
+          # Find the highest tag number for today
+          LAST_TAG=$(git tag | grep "^v${DATE}-[0-9]\+-tcg-dev$" | sort -V | tail -n 1)
 
           if [ -z "$LAST_TAG" ]; then
             NEXT_NUM=1
           else
-            LAST_NUM=$(echo "$LAST_TAG" | sed -E "s/^v${DATE}-([0-9]+)-${TAG_SUFFIX}$/\1/")
+            LAST_NUM=$(echo "$LAST_TAG" | sed -E "s/^v${DATE}-([0-9]+)-tcg-dev$/\1/")
             NEXT_NUM=$((LAST_NUM + 1))
           fi
 
-          TAG="v${DATE}-${NEXT_NUM}-${TAG_SUFFIX}"
+          TAG="v${DATE}-${NEXT_NUM}-tcg-dev"
           echo "Creating new tag: $TAG"
 
           git tag "$TAG"
