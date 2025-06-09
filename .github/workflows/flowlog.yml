@@ -1,8 +1,6 @@
 name: Deploy to AWS Asia
 
 on:
-  push:
-    branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
   workflow_dispatch:
@@ -17,11 +15,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout the repository
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          persist-credentials: false
 
-      # Configure AWS CLI for China region
       - name: Configure AWS CLI
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID_CN }}
@@ -29,19 +27,23 @@ jobs:
         run: |
           aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
           aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
-          aws configure set region ap-south-1 # Change to the appropriate region
+          aws configure set region ap-south-1
 
-      # Set up Terraform
+      - name: Create S3 bucket
+        run: |
+          BUCKET_NAME="statefilebackup202512"
+          if ! aws s3api head-bucket --bucket "$BUCKET_NAME" 2>/dev/null; then
+            aws s3api create-bucket --bucket "$BUCKET_NAME" --region ap-south-1 --create-bucket-configuration LocationConstraint=ap-south-1
+          fi
+
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v1
         with:
-          terraform_version: 1.1.7  # Specify the version of Terraform you want to use
+          terraform_version: 1.1.7
 
-      # Change directory to where main.tf is located
       - name: Change directory
         run: cd vpc-flow-logs
 
-      # Run Terraform commands (if using Terraform)
       - name: Terraform Init
         run: terraform init
         working-directory: vpc-flow-logs
@@ -54,8 +56,51 @@ jobs:
         run: terraform apply -auto-approve
         working-directory: vpc-flow-logs
 
-      # Destroy Terraform resources
       - name: Terraform Destroy
         if: github.event.inputs.destroy == 'true'
         run: terraform destroy -auto-approve
         working-directory: vpc-flow-logs
+
+      - name: Empty and delete S3 bucket
+        if: github.event.inputs.destroy == 'true'
+        run: |
+          BUCKET_NAME="flow-logs-bucketvpc07457e1-cn-northwest-1"
+          aws s3 rm s3://$BUCKET_NAME --recursive
+          aws s3api list-object-versions --bucket "$BUCKET_NAME" --query 'Versions[].{Key:Key,VersionId:VersionId}' --output text | while read key version; do
+            aws s3api delete-object --bucket "$BUCKET_NAME" --key "$key" --version-id "$version"
+          done
+          aws s3api list-multipart-uploads --bucket "$BUCKET_NAME" --query 'Uploads[].{Key:Key,UploadId:UploadId}' --output text | while read key upload_id; do
+            aws s3api abort-multipart-upload --bucket "$BUCKET_NAME" --key "$key" --upload-id "$upload_id"
+          done
+          aws s3api delete-bucket --bucket "$BUCKET_NAME" --region cn-northwest-1
+
+      - name: Auto Tag Commit (Incremental Date Format)
+        if: success()
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
+          git remote set-url origin https://x-access-token:${GH_PAT}@github.com/${{ github.repository }}
+
+          # Fetch all tags
+          git fetch --tags
+
+          # Get today's date
+          DATE=$(date +'%Y%m%d')
+
+          # Find the highest tag number for today
+          LAST_TAG=$(git tag | grep "^v${DATE}-[0-9]\+-tcg-dev$" | sort -V | tail -n 1)
+
+          if [ -z "$LAST_TAG" ]; then
+            NEXT_NUM=1
+          else
+            LAST_NUM=$(echo "$LAST_TAG" | sed -E "s/^v${DATE}-([0-9]+)-tcg-dev$/\1/")
+            NEXT_NUM=$((LAST_NUM + 1))
+          fi
+
+          TAG="v${DATE}-${NEXT_NUM}-tcg-dev"
+          echo "Creating new tag: $TAG"
+
+          git tag "$TAG"
+          git push origin "$TAG"
