@@ -15,10 +15,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout the repository
       - name: Checkout code
         uses: actions/checkout@v3
-      
+        with:
+          persist-credentials: false
+
       - name: Auto Tag Commit
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
@@ -30,7 +31,6 @@ jobs:
           git remote set-url origin https://x-access-token:${GH_PAT}@github.com/${{ github.repository }}
           git push origin "$TAG"
 
-      # Configure AWS CLI for the appropriate region
       - name: Configure AWS CLI
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID_CN }}
@@ -40,7 +40,6 @@ jobs:
           aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
           aws configure set region ap-south-1
 
-      # Create S3 bucket if it doesn't exist
       - name: Create S3 bucket
         run: |
           BUCKET_NAME="statefilebackup202512"
@@ -48,17 +47,14 @@ jobs:
             aws s3api create-bucket --bucket "$BUCKET_NAME" --region ap-south-1 --create-bucket-configuration LocationConstraint=ap-south-1
           fi
 
-      # Set up Terraform
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v1
         with:
           terraform_version: 1.1.7
 
-      # Change directory to where main.tf is located
       - name: Change directory
         run: cd vpc-flow-logs
 
-      # Initialize Terraform with S3 backend
       - name: Terraform Init
         run: terraform init
         working-directory: vpc-flow-logs
@@ -71,26 +67,20 @@ jobs:
         run: terraform apply -auto-approve
         working-directory: vpc-flow-logs
 
-      # Destroy Terraform resources
       - name: Terraform Destroy
         if: github.event.inputs.destroy == 'true'
         run: terraform destroy -auto-approve
         working-directory: vpc-flow-logs
 
-      # Empty and delete S3 bucket
       - name: Empty and delete S3 bucket
         if: github.event.inputs.destroy == 'true'
         run: |
           BUCKET_NAME="flow-logs-bucketvpc07457e1-cn-northwest-1"
-          # Delete all objects
           aws s3 rm s3://$BUCKET_NAME --recursive
-          # Delete all object versions
           aws s3api list-object-versions --bucket "$BUCKET_NAME" --query 'Versions[].{Key:Key,VersionId:VersionId}' --output text | while read key version; do
             aws s3api delete-object --bucket "$BUCKET_NAME" --key "$key" --version-id "$version"
           done
-          # Delete all multipart uploads
           aws s3api list-multipart-uploads --bucket "$BUCKET_NAME" --query 'Uploads[].{Key:Key,UploadId:UploadId}' --output text | while read key upload_id; do
             aws s3api abort-multipart-upload --bucket "$BUCKET_NAME" --key "$key" --upload-id "$upload_id"
           done
-          # Delete the bucket
           aws s3api delete-bucket --bucket "$BUCKET_NAME" --region cn-northwest-1
