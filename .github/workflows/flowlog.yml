@@ -83,24 +83,13 @@ jobs:
           git config --global user.name "GitHub Actions"
           git remote set-url origin https://x-access-token:${GH_PAT}@github.com/${{ github.repository }}
 
-          # Fetch all tags
-          git fetch --tags
+          # # Fetch all tags
+          # git fetch --tags
 
-          # Get today's date
+          # # Get today's date
+          # DATE=$(date +'%Y%m%d')
           DATE=$(date +'%Y%m%d')
-
-          # Find the highest tag number for today
-          LAST_TAG=$(git tag | grep "^v${DATE}-[0-9]\+-tcg-dev$" | sort -V | tail -n 1)
-
-          if [ -z "$LAST_TAG" ]; then
-            NEXT_NUM=1
-          else
-            LAST_NUM=$(echo "$LAST_TAG" | sed -E "s/^v${DATE}-([0-9]+)-tcg-dev$/\1/")
-            NEXT_NUM=$((LAST_NUM + 1))
-          fi
-
-          TAG="v${DATE}-${NEXT_NUM}-tcg-dev"
-          echo "Creating new tag: $TAG"
-
+          COUNT=$(git tag --list "v${DATE}.*-tcg-dev" | wc -l)
+          TAG="v${DATE}.$((COUNT+1))-tcg-dev"
           git tag "$TAG"
           git push origin "$TAG"
