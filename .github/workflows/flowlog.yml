@@ -41,9 +41,6 @@ jobs:
         with:
           terraform_version: 1.1.7
 
-      - name: Change directory
-        run: cd vpc-flow-logs
-
       - name: Terraform Init
         run: terraform init
         working-directory: vpc-flow-logs
@@ -83,10 +80,20 @@ jobs:
           git config --global user.name "GitHub Actions"
           git remote set-url origin https://x-access-token:${GH_PAT}@github.com/${{ github.repository }}
 
-          # # Get today's date
-          # DATE=$(date +'%Y%m%d')
+          git fetch --tags
+
           DATE=$(date +'%Y%m%d')
-          COUNT=$(git tag --list "v${DATE}.*-tcg-dev" | wc -l)
-          TAG="v${DATE}.$((COUNT+1))-tcg-dev"
+          LAST_TAG=$(git tag --list "v${DATE}.*-tcg-dev" | sort -V | tail -n 1)
+
+          if [ -z "$LAST_TAG" ]; then
+            COUNT=1
+          else
+            LAST_COUNT=$(echo "$LAST_TAG" | sed -E "s/v${DATE}\.([0-9]+)-tcg-dev/\1/")
+            COUNT=$((LAST_COUNT + 1))
+          fi
+
+          TAG="v${DATE}.${COUNT}-tcg-dev"
+          echo "Creating tag: $TAG"
+
           git tag "$TAG"
           git push origin "$TAG"
