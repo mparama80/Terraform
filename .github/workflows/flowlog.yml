@@ -76,8 +76,8 @@ jobs:
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
         run: |
-          git config --global user.email "actions@github.com"
-          git config --global user.name "GitHub Actions"
+          git config --global user.email "mparama80@gmail.com"
+          git config --global user.name "Paramasivam Muthusamy"
           git remote set-url origin https://x-access-token:${GH_PAT}@github.com/${{ github.repository }}
 
           git fetch --tags
