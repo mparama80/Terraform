@@ -1,0 +1,19 @@
+name: Tag Workflow
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment (dev, uat, prod)'
+        required: true
+        default: 'dev'
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  call-tag:
+    uses: ./.github/workflows/dev-tag-reusable.yml
+    with:
+      tag_suffix: tcg-${{ github.event.inputs.environment }}
