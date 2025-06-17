@@ -1,4 +1,4 @@
-name: Tag Workflow
+name: Tag MultiEnv
 
 on:
   workflow_dispatch:
