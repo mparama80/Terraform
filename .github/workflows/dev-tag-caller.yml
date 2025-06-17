@@ -1,0 +1,10 @@
+name: Call Dev Tag Workflow
+
+on:
+  workflow_dispatch:
+
+jobs:
+  call-dev-tag:
+    uses: ./.github/workflows/dev-tag-reusable.yml
+    with:
+      tag_suffix: "tcg-dev"
