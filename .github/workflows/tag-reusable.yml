@@ -9,7 +9,7 @@ on:
         default: "tcg-dev"
 
 jobs:
-  apply-dev-tag:
+  apply-tag:
     runs-on: ubuntu-latest
 
     permissions:
