@@ -1,0 +1,42 @@
+name: Dev Tag Reusable
+
+on:
+  workflow_call:
+    inputs:
+      tag_suffix:
+        required: false
+        type: string
+        default: "tcg-dev"
+
+jobs:
+  apply-dev-tag:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      actions: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.2.2
+
+      - name: Auto Tag Commit
+        id: auto_tag
+        run: |
+          DATE=$(date +'%Y%m%d')
+          git fetch --tags
+          LAST_TAG=$(git tag --list "v${DATE}.*-${{ inputs.tag_suffix }}" | sort -V | tail -n 1)
+
+          if [ -z "$LAST_TAG" ]; then
+            COUNT=1
+          else
+            LAST_COUNT=$(echo "$LAST_TAG" | sed -E "s/v${DATE}\.([0-9]+)-${{ inputs.tag_suffix }}/\1/")
+            COUNT=$((LAST_COUNT + 1))
+          fi
+
+          TAG="v${DATE}.${COUNT}-${{ inputs.tag_suffix }}"
+          echo "Creating tag: $TAG"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "Actions Bot"
+          git tag "$TAG"
+          git push origin "$TAG"
