@@ -1,4 +1,4 @@
-name: Dev Tag Reusable
+name: Tag Reusable
 
 on:
   workflow_call:
