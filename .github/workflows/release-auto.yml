@@ -24,7 +24,7 @@ jobs:
       - name: Create GitHub release
         run: |
           echo "Creating release for tag: ${{ inputs.tag_name }}"
-          gh release create "${{ inputs.tag_name }}" \
+          gh release create --draft "${{ inputs.tag_name }}" \
             --title "${{ inputs.tag_name }}" \
             --generate-notes
         env:
