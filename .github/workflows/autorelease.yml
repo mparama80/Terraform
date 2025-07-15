@@ -1,14 +1,14 @@
 name: Auto Release Notes
 
 on:
-  workflow_dispatch:
   push:
     tags:
-      - 'v*.*.*'  # Only run on version tags
+      - 'v*.*-tcg-*'  # Matches dev, uat, prod etc.
 
 jobs:
   generate-release:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -16,10 +16,13 @@ jobs:
       - name: Set up GitHub CLI
         uses: cli/gh-action@v2
 
-      - name: Generate release notes
+      - name: Create GitHub release with auto-generated notes
         run: |
-          gh release create "${GITHUB_REF#refs/tags/}" \
-            --generate-notes \
-            --title "${GITHUB_REF#refs/tags/}" 
+          TAG_NAME="${GITHUB_REF#refs/tags/}"
+          echo "Detected tag: $TAG_NAME"
+
+          gh release create "$TAG_NAME" \
+            --title "$TAG_NAME" \
+            --generate-notes
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
