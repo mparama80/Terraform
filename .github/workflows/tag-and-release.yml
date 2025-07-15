@@ -1,3 +1,5 @@
+# .github/workflows/tag-and-release.yml
+
 name: Tag MultiEnv
 
 on:
@@ -10,10 +12,15 @@ on:
 
 permissions:
   contents: write
-  actions: read
 
 jobs:
-  call-tag:
+  tag:
     uses: ./.github/workflows/tag-reusable.yml
     with:
       tag_suffix: tcg-${{ github.event.inputs.environment }}
+
+  release:
+    needs: tag
+    uses: ./.github/workflows/release-auto.yml
+    with:
+      tag_name: ${{ needs.tag.outputs.tag_name }}
