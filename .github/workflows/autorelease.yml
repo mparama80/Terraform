@@ -3,7 +3,7 @@ name: Auto Release Notes
 on:
   push:
     tags:
-      - 'v*.*-tcg-*'  # Matches dev, uat, prod etc.
+      - 'v*.*-tcg-*'  # Matches v20250715.2-tcg-dev, -uat, -prod, etc.
 
 jobs:
   generate-release:
@@ -13,8 +13,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up GitHub CLI
-        uses: cli/gh-action@v2
+      - name: Verify GitHub CLI availability
+        run: gh --version
 
       - name: Create GitHub release with auto-generated notes
         run: |
