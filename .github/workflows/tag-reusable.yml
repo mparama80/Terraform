@@ -33,6 +33,11 @@ jobs:
             LAST_COUNT=$(echo "$LAST_TAG" | sed -E "s/v${DATE}\.([0-9]+)-${{ inputs.tag_suffix }}/\1/")
             COUNT=$((LAST_COUNT + 1))
           fi
+trigger-release:
+    needs: create-tag
+    uses: ./.github/workflows/release-auto.yml
+    with:
+      tag_name: ${{ needs.create-tag.outputs.tag_name }}
 
           TAG="v${DATE}.${COUNT}-${{ inputs.tag_suffix }}"
           echo "Creating tag: $TAG"
