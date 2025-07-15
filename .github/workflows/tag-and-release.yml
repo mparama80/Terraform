@@ -10,8 +10,10 @@ on:
         required: true
         default: 'dev'
 
+# ✅ This sets the correct permissions for any called workflows
 permissions:
   contents: write
+  actions: read
 
 jobs:
   tag:
