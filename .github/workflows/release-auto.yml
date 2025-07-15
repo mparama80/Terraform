@@ -1,0 +1,31 @@
+# .github/workflows/release-auto.yml
+
+name: Auto Release
+
+on:
+  workflow_call:
+    inputs:
+      tag_name:
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  generate-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create GitHub release with auto notes
+        run: |
+          echo "Creating release for tag: ${{ inputs.tag_name }}"
+
+          gh release create "${{ inputs.tag_name }}" \
+            --title "${{ inputs.tag_name }}" \
+            --generate-notes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
