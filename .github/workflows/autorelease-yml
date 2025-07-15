@@ -1,0 +1,24 @@
+name: Auto Release Notes
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # Only run on version tags
+
+jobs:
+  generate-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up GitHub CLI
+        uses: cli/gh-action@v2
+
+      - name: Generate release notes
+        run: |
+          gh release create "${GITHUB_REF#refs/tags/}" \
+            --generate-notes \
+            --title "${GITHUB_REF#refs/tags/}" 
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
