@@ -1,6 +1,7 @@
 name: Auto Release Notes
 
 on:
+  workflow_dispatch:
   push:
     tags:
       - 'v*.*-tcg-*'  # Matches v20250715.2-tcg-dev, -uat, -prod, etc.
